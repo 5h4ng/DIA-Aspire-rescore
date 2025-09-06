@@ -1,0 +1,52 @@
+site_name: DIA-Aspire-Rescore
+repo_url: https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore
+site_url: https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore
+site_description: This is a template repository for Python projects that use uv for their dependency management.
+site_author: Zixiang Shang
+edit_uri: edit/main/docs/
+repo_name: https://github.com/5h4ng/DIA-Aspire-Rescore
+copyright: Maintained by <a href="https://https://github.com/5h4ng.com">https://github.com/5h4ng</a>.
+
+nav:
+  - Home: index.md
+  - Modules: modules.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["dia_aspire_rescore"]
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/DIA-Aspire-Rescore
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
