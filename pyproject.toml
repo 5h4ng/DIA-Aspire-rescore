@@ -17,6 +17,15 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
+dependencies = [
+    "click>=8.1.8",
+    "numpy>=2.0.2",
+    "pandas>=2.3.2",
+    "psm-utils>=1.4.1",
+    "pyarrow>=21.0.0",
+    "pydantic>=2.11.7",
+    "torch>=2.8.0",
+]
 
 [project.urls]
 Homepage = "https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore/"
@@ -28,13 +37,13 @@ dev = [
     "pytest>=7.2.0",
     "pre-commit>=2.20.0",
     "tox-uv>=1.11.3",
-    
     "mypy>=0.991",
     "pytest-cov>=4.0.0",
     "ruff>=0.11.5",
     "mkdocs>=1.4.2",
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
+    "jupyter>=1.1.1",
 ]
 
 [build-system]
@@ -114,4 +123,3 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["dia_aspire_rescore"]
-
