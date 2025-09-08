@@ -1,5 +1,6 @@
 """Tests for psm_utils.io.diann."""
 
+import pytest
 from psm_utils.psm import PSM
 
 from dia_aspire_rescore.io import DIANN2ParquetReader
@@ -53,12 +54,38 @@ test_psm = [
 ]
 
 
+def approx_equal_psm(psm1, psm2, rel_tol=1e-6):
+    """
+    Compare two PSM objects with tolerance for floating-point values,
+    to avoid the floating-point precision issues.
+    """
+    # Compare non-floating point attributes directly
+    assert psm1.peptidoform == psm2.peptidoform
+    assert psm1.spectrum_id == psm2.spectrum_id
+    assert psm1.run == psm2.run
+    assert psm1.is_decoy == psm2.is_decoy
+    assert psm1.protein_list == psm2.protein_list
+    assert psm1.source == psm2.source
+
+    # Compare floating-point attributes with tolerance
+    assert psm1.qvalue == pytest.approx(psm2.qvalue, rel=rel_tol)
+    assert psm1.pep == pytest.approx(psm2.pep, rel=rel_tol)
+    assert psm1.precursor_mz == pytest.approx(psm2.precursor_mz, rel=rel_tol)
+    assert psm1.retention_time == pytest.approx(psm2.retention_time, rel=rel_tol)
+    assert psm1.ion_mobility == pytest.approx(psm2.ion_mobility, rel=rel_tol)
+
+    # Compare rescoring features with tolerance
+    assert len(psm1.rescoring_features) == len(psm2.rescoring_features)
+    for key in psm1.rescoring_features:
+        assert psm1.rescoring_features[key] == pytest.approx(psm2.rescoring_features[key], rel=rel_tol)
+
+
 class TestDIANN2ParquetReader:
     def test_iter(self):
         with DIANN2ParquetReader("./tests/test_data/test_diann2.parquet") as reader:
             for i, psm in enumerate(reader):
                 psm.provenance_data = {}
-                assert psm == test_psm[i]
+                approx_equal_psm(psm, test_psm[i])
 
     def test__parse_peptidoform(self):
         test_cases = [
