@@ -38,7 +38,6 @@ Documentation = "https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore/"
 dev = [
     "pytest>=7.2.0",
     "pre-commit>=2.20.0",
-    "tox-uv>=1.11.3",
     "mypy>=0.991",
     "pytest-cov>=4.0.0",
     "ruff>=0.11.5",

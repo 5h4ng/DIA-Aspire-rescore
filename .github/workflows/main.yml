@@ -49,6 +49,18 @@ jobs:
       - name: Check typing
         run: uv run mypy
 
+      - name: Coverage Summary
+        if: ${{ matrix.python-version == '3.11' && always() }}
+        run: |
+          echo "## Test Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          uv run coverage report --format=markdown >> $GITHUB_STEP_SUMMARY 2>/dev/null || uv run coverage report >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          COVERAGE=$(uv run coverage report | grep TOTAL | awk '{print $NF}')
+          echo "**Total Coverage: $COVERAGE**" >> $GITHUB_STEP_SUMMARY
+
       - name: Upload coverage reports to Codecov with GitHub Action on Python 3.11
         uses: codecov/codecov-action@v4
         if: ${{ matrix.python-version == '3.11' }}
