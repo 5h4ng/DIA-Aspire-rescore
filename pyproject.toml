@@ -18,7 +18,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "alphabase>=1.7.2",
+    "alphabase==1.7.4",
     "alpharaw>=0.4.8",
     "click>=8.1.8",
     "numpy>=2.0.2",

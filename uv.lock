@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 2
 requires-python = ">=3.9, <4.0"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -11,7 +11,7 @@ resolution-markers = [
 
 [[package]]
 name = "alphabase"
-version = "1.7.2"
+version = "1.7.4"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "biopython" },
@@ -34,9 +34,9 @@ dependencies = [
     { name = "tqdm" },
     { name = "xxhash" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/08/f2/e2990c7cf9cdc1729afc9cc8d3ea271366ca28d4a0b273d503f0f73bb689/alphabase-1.7.2.tar.gz", hash = "sha256:7fdc6a5865de4322cbff023728c931c54834f0c72bd2ef9fbcf14aa75dca1849", size = 270222, upload-time = "2025-09-30T10:39:15.644Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/00/e1/9849501ee41259add682983bc1606bbb1e77691f76a06cf8caf85405d660/alphabase-1.7.4.tar.gz", hash = "sha256:40f78c09c0a0b4c13bac3d3f450ab195b43fae17439f4694785688a87a047d56", size = 271380, upload-time = "2025-10-30T12:21:05.618Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b8/3c/5440d2789c320d158aa5d7fe0cfdcef17f826748c96020e77419408c401e/alphabase-1.7.2-py3-none-any.whl", hash = "sha256:9577f8fec22bf0ef100df561e3239f7dbff18d86bf07a12e949bad15739adf5c", size = 293535, upload-time = "2025-09-30T10:39:13.786Z" },
+    { url = "https://files.pythonhosted.org/packages/6d/2b/92eb43c893a9524324ee1cf6cd65f7150990d1a45d73e38347f29355416b/alphabase-1.7.4-py3-none-any.whl", hash = "sha256:b0e239bb39fa03c18ad6d4e320e1c21702adc2524f9ae8c1a70bc70dbbd26e6e", size = 294737, upload-time = "2025-10-30T12:21:04.3Z" },
 ]
 
 [[package]]
@@ -769,7 +769,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "alphabase", specifier = ">=1.7.2" },
+    { name = "alphabase", specifier = "==1.7.4" },
     { name = "alpharaw", specifier = ">=0.4.8" },
     { name = "click", specifier = ">=8.1.8" },
     { name = "numpy", specifier = ">=2.0.2" },
