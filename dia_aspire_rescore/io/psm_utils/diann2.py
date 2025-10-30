@@ -39,7 +39,7 @@ RESCORING_FEATURES = [
 class DIANN2ParquetReader(ReaderBase):
     def __init__(self, filename) -> None:
         """
-        Reader for DIA-NN 2.0 main report in parquet format.
+        psm_utils Reader for DIA-NN 2.0 main report in parquet format.
 
         Parameters
         ----------
@@ -51,7 +51,7 @@ class DIANN2ParquetReader(ReaderBase):
 
     def __iter__(self) -> Iterable[PSM]:
         # TODO: There may have some floating-point precision issues
-        # float64
+        # parquet stores float64
         with pq.ParquetFile(self.filename) as reader:
             for batch in reader.iter_batches():
                 for row in batch.to_pylist():
