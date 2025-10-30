@@ -1,4 +1,6 @@
+data/raw
 docs/source
+.DS_Store
 
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 

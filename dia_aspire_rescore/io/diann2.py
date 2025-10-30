@@ -51,6 +51,7 @@ class DIANN2ParquetReader(ReaderBase):
 
     def __iter__(self) -> Iterable[PSM]:
         # TODO: There may have some floating-point precision issues
+        # float64
         with pq.ParquetFile(self.filename) as reader:
             for batch in reader.iter_batches():
                 for row in batch.to_pylist():
