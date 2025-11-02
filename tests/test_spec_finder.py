@@ -1,4 +1,6 @@
 """Tests for spec_finder module."""
+# Note: Functions decorated with @numba.jit are compiled to native code
+# and therefore are not included in pytest coverage results.
 
 import numpy as np
 import pandas as pd
@@ -8,6 +10,7 @@ from dia_aspire_rescore.constants.spectrum import SpectrumDfCols
 from dia_aspire_rescore.psm.spec_finder import (
     find_batch_DIA_spec_idxes_by_rt,
     find_DIA_spec_idxes_by_rt,
+    find_dia_spec_idxes_same_window,
     find_single_DIA_spec_idx_by_rt,
 )
 
@@ -420,3 +423,75 @@ class TestEdgeCases:
         )
         # Should still find spectrum if m/z is in window
         assert result == 1
+
+
+class TestFindDiaSpecIdxesSameWindow:
+    """Test suite for find_dia_spec_idxes_same_window function.
+
+    This function finds spectrum indices within the same DIA m/z window,
+    returning up to max_spec_per_query indices centered around the query RT.
+    """
+
+    def test_basic_window_query(self):
+        """Test basic window query with sufficient spectra."""
+        spec_rt_values = np.array([10.0, 20.0, 30.0, 40.0, 50.0], dtype=np.float32)
+        query_rt_values = np.array([25.0], dtype=np.float32)
+        max_spec_per_query = 3
+
+        result = find_dia_spec_idxes_same_window(
+            spec_rt_values,
+            query_rt_values,
+            max_spec_per_query,
+        )
+
+        assert result.shape == (1, 3)
+        assert np.array_equal(result[0], np.array([1, 2, 3], dtype=np.int32))
+
+    def test_query_at_start_boundary(self):
+        """Test query RT at or near the start of spectrum array."""
+        spec_rt_values = np.array([10.0, 20.0, 30.0, 40.0, 50.0], dtype=np.float32)
+        query_rt_values = np.array([5.0], dtype=np.float32)
+        max_spec_per_query = 3
+
+        result = find_dia_spec_idxes_same_window(
+            spec_rt_values,
+            query_rt_values,
+            max_spec_per_query,
+        )
+
+        assert result.shape == (1, 3)
+        assert np.array_equal(result[0], np.array([0, 1, 2], dtype=np.int32))
+
+    def test_query_at_end_boundary(self):
+        """Test query RT at or near the end of spectrum array."""
+        spec_rt_values = np.array([10.0, 20.0, 30.0, 40.0, 50.0], dtype=np.float32)
+        query_rt_values = np.array([60.0], dtype=np.float32)
+        max_spec_per_query = 3
+
+        result = find_dia_spec_idxes_same_window(
+            spec_rt_values,
+            query_rt_values,
+            max_spec_per_query,
+        )
+
+        assert result.shape == (1, 3)
+
+        assert np.array_equal(result[0], np.array([2, 3, 4], dtype=np.int32))
+
+    def test_multiple_queries(self):
+        """Test multiple queries in a single call."""
+        spec_rt_values = np.array([10.0, 20.0, 30.0, 40.0, 50.0], dtype=np.float32)
+        query_rt_values = np.array([15.0, 30.0, 55.0], dtype=np.float32)
+        max_spec_per_query = 3
+
+        result = find_dia_spec_idxes_same_window(
+            spec_rt_values,
+            query_rt_values,
+            max_spec_per_query,
+        )
+
+        assert result.shape == (3, 3)
+
+        assert np.array_equal(result[0], np.array([0, 1, 2], dtype=np.int32))
+        assert np.array_equal(result[1], np.array([1, 2, 3], dtype=np.int32))
+        assert np.array_equal(result[2], np.array([2, 3, 4], dtype=np.int32))

@@ -5,6 +5,48 @@ import pandas as pd
 from dia_aspire_rescore.constants.spectrum import SpectrumDfCols
 
 
+@numba.njit
+def find_dia_spec_idxes_same_window(
+    spec_rt_values: np.ndarray,
+    query_rt_values: np.ndarray,
+    max_spec_per_query: int,
+) -> np.ndarray:
+    """
+    For given array of query RT values, find spectrum indices
+    from the subset of spectra within the same normal DIA m/z window.
+    This function is numba accelerated.
+
+    Adapted from alpharaw: https://github.com/MannLabs/alpharaw
+
+    Parameters
+    ----------
+    spec_rt_values : np.ndarray
+        RT values of given DIA spectra.
+    query_rt_values : np.ndarray
+        Query RT values.
+    max_spec_per_query : int
+        Return maximal spectrum indices (scan windows) for the given query.
+
+    Returns
+    -------
+    ndarray[int32]
+        Result spectrum indices with shape (query num, max_spec_per_query).
+    """
+    rt_idxes = np.searchsorted(spec_rt_values, query_rt_values)
+
+    spec_idxes = np.full((len(rt_idxes), max_spec_per_query), -1, dtype=np.int32)
+    n = max_spec_per_query // 2
+
+    for iquery in range(len(rt_idxes)):
+        if rt_idxes[iquery] < n:
+            spec_idxes[iquery, :] = np.arange(0, max_spec_per_query)
+        elif rt_idxes[iquery] + n >= len(spec_rt_values):  # fix the boundary issue
+            spec_idxes[iquery, :] = np.arange(len(spec_rt_values) - max_spec_per_query, len(spec_rt_values))
+        else:
+            spec_idxes[iquery, :] = np.arange(rt_idxes[iquery] - n, rt_idxes[iquery] - n + max_spec_per_query)
+    return spec_idxes
+
+
 def find_DIA_spec_idxes_by_rt(
     spectrum_df: pd.DataFrame,
     query_rts: np.ndarray,
