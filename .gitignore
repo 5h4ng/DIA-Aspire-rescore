@@ -1,6 +1,7 @@
 data/raw
 docs/source
 .DS_Store
+.hdf5
 
 # From https://raw.githubusercontent.com/github/gitignore/main/Python.gitignore
 

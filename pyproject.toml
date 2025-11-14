@@ -46,6 +46,8 @@ dev = [
     "mkdocs-material>=8.5.10",
     "mkdocstrings[python]>=0.26.1",
     "jupyter>=1.1.1",
+    "alpharaw[viz]>=0.4.8",
+    "spectrum-utils>=0.4.2",
 ]
 
 [build-system]

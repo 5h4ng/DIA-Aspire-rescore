@@ -26,6 +26,7 @@ def find_dia_spec_idxes_same_window(
         Query RT values.
     max_spec_per_query : int
         Return maximal spectrum indices (scan windows) for the given query.
+        Must be less than or equal to the number of spectra.
 
     Returns
     -------
@@ -37,6 +38,7 @@ def find_dia_spec_idxes_same_window(
     spec_idxes = np.full((len(rt_idxes), max_spec_per_query), -1, dtype=np.int32)
     n = max_spec_per_query // 2
 
+    # TODO: closest RT
     for iquery in range(len(rt_idxes)):
         if rt_idxes[iquery] < n:
             spec_idxes[iquery, :] = np.arange(0, max_spec_per_query)
