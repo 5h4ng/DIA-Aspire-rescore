@@ -153,38 +153,28 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
                     # assign spec_idx to psm_df_one_raw
                     psm_df_one_raw.loc[psm_idxes + psm_origin_len * i, "spec_idx"] = absolute_spec_idxes[:, i]
 
-                for psm_pos, psm_idx in enumerate(psm_idxes):
+                # Collect indices of all PSMs in current group (including all neighbors)
+                current_group_psm_indices = []
+                for psm_idx in psm_idxes:
                     for neighbor_idx in range(self.max_spec_per_query):
                         idx_in_all = psm_idx + psm_origin_len * neighbor_idx
-                        relative_spec_idx = all_spec_idxes[idx_in_all]
-                        if relative_spec_idx == -1:
-                            continue
+                        current_group_psm_indices.append(idx_in_all)
 
-                        absolute_spec_idx = absolute_spec_idxes[psm_pos, neighbor_idx]
+                current_group_psm_indices = np.array(current_group_psm_indices, dtype=np.int32)
 
-                        frag_start = psm_df_one_raw.frag_start_idx.values[idx_in_all]
-                        frag_stop = psm_df_one_raw.frag_stop_idx.values[idx_in_all]
+                # Extract data for current group only
+                current_spec_idxes = all_spec_idxes[current_group_psm_indices]
+                current_frag_start = psm_df_one_raw.frag_start_idx.values[current_group_psm_indices]
+                current_frag_stop = psm_df_one_raw.frag_stop_idx.values[current_group_psm_indices]
 
-                        peak_start = group_df.peak_start_idx.values[relative_spec_idx]
-                        peak_stop = group_df.peak_stop_idx.values[relative_spec_idx]
-                        if peak_stop > peak_start:
-                            spec_peaks_mz = raw_data.peak_df.mz.values[peak_start:peak_stop]
-                        else:
-                            spec_peaks_mz = np.array([])
+                logger.debug(f"Current group PSM indices: {current_group_psm_indices}")
+                logger.debug(f"Current group spec_idxes: {current_spec_idxes}")
 
-                        frag_mzs = self.fragment_mz_df.values[frag_start:frag_stop, :]
-                        logger.debug(
-                            f"Match details - absolute_spec_idx: {absolute_spec_idx}, "
-                            f"relative_spec_idx: {relative_spec_idx}, "
-                            f"psm_idx: {psm_idx}, neighbor: {neighbor_idx}, "
-                            f"spec_peaks_mz: {spec_peaks_mz}, "
-                            f"query_frags_mz: {frag_mzs.flatten()}"
-                        )
-
+                # Only match PSMs in current group with current group's peaks
                 match_one_raw_with_numba(
-                    all_spec_idxes,
-                    psm_df_one_raw.frag_start_idx.values,
-                    psm_df_one_raw.frag_stop_idx.values,
+                    current_spec_idxes,
+                    current_frag_start,
+                    current_frag_stop,
                     self.fragment_mz_df.values,
                     self.all_frag_mz_tols,
                     raw_data.peak_df.mz.values,
