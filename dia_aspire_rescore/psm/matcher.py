@@ -154,13 +154,13 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
                     psm_df_one_raw.loc[psm_idxes + psm_origin_len * i, "spec_idx"] = absolute_spec_idxes[:, i]
 
                 # Collect indices of all PSMs in current group (including all neighbors)
-                current_group_psm_indices = []
+                current_group_psm_indices_list = []
                 for psm_idx in psm_idxes:
                     for neighbor_idx in range(self.max_spec_per_query):
                         idx_in_all = psm_idx + psm_origin_len * neighbor_idx
-                        current_group_psm_indices.append(idx_in_all)
+                        current_group_psm_indices_list.append(idx_in_all)
 
-                current_group_psm_indices = np.array(current_group_psm_indices, dtype=np.int32)
+                current_group_psm_indices = np.array(current_group_psm_indices_list, dtype=np.int32)
 
                 # Extract data for current group only
                 current_spec_idxes = all_spec_idxes[current_group_psm_indices]
