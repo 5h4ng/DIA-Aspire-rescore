@@ -1,3 +1,5 @@
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -14,7 +16,7 @@ def plot_target_decoy_dist(
     stat: str = "density",
     element: str = "step",
     alpha: float = 0.4,
-    ax: plt.Axes | None = None,
+    ax: Optional[plt.Axes] = None,
     **kwargs,
 ):
     """
@@ -119,7 +121,7 @@ def plot_target_decoy_dist(
 def plot_qvalues(
     qvalues: np.ndarray,
     threshold: float = 0.1,
-    ax: plt.Axes | None = None,
+    ax: Optional[plt.Axes] = None,
     **kwargs,
 ):
     """
