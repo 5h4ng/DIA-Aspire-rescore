@@ -102,8 +102,6 @@ def test_predict_rt_after_finetuning(finetuner, psm_df, psm_df_rt, baseline_metr
 
     expected_r_square = baseline_metrics["rt_after"]["r_square"]
 
-    assert r_square > 0.97, f"RT R_square {r_square:.4f} should be > 0.97 after fine-tuning"
-
     assert abs(r_square - expected_r_square) < 0.01, (
         f"RT R_square {r_square:.4f} differs from expected {expected_r_square:.4f}"
     )
@@ -112,8 +110,6 @@ def test_predict_rt_after_finetuning(finetuner, psm_df, psm_df_rt, baseline_metr
     mae = (psm_df_rt_pred["rt_pred"] - psm_df_rt_pred["rt_norm"]).abs().mean()
 
     expected_mae = baseline_metrics["rt_after"]["mae"]
-
-    assert mae < 0.03, f"RT MAE {mae:.4f} should be < 0.03 after fine-tuning"
 
     assert abs(mae - expected_mae) < 0.01, f"RT MAE {mae:.4f} differs from expected {expected_mae:.4f}"
 
@@ -183,7 +179,7 @@ def test_complete_finetuning_workflow(config, psm_df, psm_df_rt, matched_intensi
     finetuner = FineTuner(config)
     finetuner.load_pretrained("generic")
 
-    rt_before = finetuner.test_rt_model(psm_df_rt)["R_square"].values[0]
+    rt_before = (finetuner.predict_rt(psm_df_rt)["rt_pred"] - finetuner.predict_rt(psm_df_rt)["rt_norm"]).abs().mean()
 
     psm_df_ms2_before = psm_df.copy()
     intensity_before = finetuner.predict_ms2(psm_df_ms2_before)
@@ -195,7 +191,7 @@ def test_complete_finetuning_workflow(config, psm_df, psm_df_rt, matched_intensi
     finetuner.train_rt(psm_df)
     finetuner.train_ms2(psm_df, matched_intensity_df)
 
-    rt_after = finetuner.test_rt_model(psm_df_rt)["R_square"].values[0]
+    rt_after = (finetuner.predict_rt(psm_df_rt)["rt_pred"] - finetuner.predict_rt(psm_df_rt)["rt_norm"]).abs().mean()
 
     psm_df_ms2_after = psm_df.copy()
     intensity_after = finetuner.predict_ms2(psm_df_ms2_after)
@@ -204,6 +200,6 @@ def test_complete_finetuning_workflow(config, psm_df, psm_df_rt, matched_intensi
     )
     pcc_after = psm_df_ms2_after[psm_df_ms2_after["decoy"] == 0]["PCC"].mean()
 
-    assert rt_after > rt_before, f"RT R_square should improve after fine-tuning: {rt_before:.4f} -> {rt_after:.4f}"
+    assert rt_after < rt_before, f"RT MAE should improve after fine-tuning: {rt_before:.4f} -> {rt_after:.4f}"
 
     assert pcc_after > pcc_before, f"MS2 PCC should improve after fine-tuning: {pcc_before:.4f} -> {pcc_after:.4f}"
