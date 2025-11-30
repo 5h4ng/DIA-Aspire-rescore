@@ -1,6 +1,4 @@
 """Tests for spec_finder module."""
-# Note: Functions decorated with @numba.jit are compiled to native code
-# and therefore are not included in pytest coverage results.
 
 import numpy as np
 import pandas as pd
