@@ -49,7 +49,7 @@ class RTFeatureGenerator(BaseFeatureGenerator):
             psm_df = self.model_mgr.predict_rt(psm_df)
             psm_df["delta_rt"] = psm_df.rt_pred - psm_df.rt_norm
             psm_df["abs_rt_delta"] = psm_df["delta_rt"].abs()
-            psm_df["rt_ratio"] = np.min(psm_df.rt_pred, psm_df.rt_norm) / np.max(psm_df.rt_pred, psm_df.rt_norm)
+            psm_df["rt_ratio"] = np.minimum(psm_df.rt_pred, psm_df.rt_norm) / np.maximum(psm_df.rt_pred, psm_df.rt_norm)
 
         else:
             psm_df["rt_pred"] = 0
