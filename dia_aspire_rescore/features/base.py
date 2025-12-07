@@ -17,7 +17,7 @@ class BaseFeatureGenerator(ABC):
         pass
 
     @abstractmethod
-    def generate(self, psm_df: pd.DataFrame, *args, **kwargs):
+    def generate(self, psm_df: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
         """
         Generate and add features to psm_df.
         """

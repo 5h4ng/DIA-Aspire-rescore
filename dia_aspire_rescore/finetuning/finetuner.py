@@ -161,24 +161,28 @@ class FineTuner:
 
     def predict_ms2(self, psm_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Predict MS2 intensities.
+        Predict MS2 fragment intensities.
 
         Parameters
         ----------
         psm_df : pd.DataFrame
-            PSM DataFrame containing peptide information。
-            Note: The PSM DataFrame should be sorted by nAA in ascending order.
-            https://github.com/MannLabs/alphadia/pull/409
+            PSM DataFrame. Must be sorted by `nAA` (https://github.com/MannLabs/alphadia/pull/409).
 
         Returns
         -------
         pd.DataFrame
-            DataFrame containing predicted MS2 intensities
+            Predicted intensities in wide format. Aligned with `psm_df` via `frag_start_idx`, `frag_stop_idx`.
+            Columns are fragment types.
 
         Raises
         ------
         RuntimeError
             If ModelManager is not initialized or models not loaded
+
+        Warnings
+        --------
+        Input must be nAA-sorted. Unsorted input causes row misalignment in output.
+        See: https://github.com/MannLabs/alphadia/pull/409
         """
         if self._model_manager is None:
             raise RuntimeError("ModelManager is not initialized")

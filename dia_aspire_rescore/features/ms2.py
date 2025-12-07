@@ -119,16 +119,20 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
         Parameters
         ----------
         psm_df : pd.DataFrame
-            PSM DataFrame containing peptide information
+            PSM DataFrame from `match_ms2_multi_raw()`.
         matched_intensity_df : pd.DataFrame
-            DataFrame with matched fragment intensities
+            Matched intensities. Must align with psm_df via `frag_start_idx:frag_stop_idx`.
         matched_mz_err_df : pd.DataFrame
-            DataFrame with matched mass errors
+            Mass errors. Must align with psm_df via `frag_start_idx:frag_stop_idx`.
 
         Returns
         -------
         pd.DataFrame
-            psm_df with MS2 feature columns added
+            psm_df with added feature columns. Row order preserved.
+
+        Notes
+        -----
+        Internally handles nAA-sorting for `predict_ms2()` and restores original order.
         """
         predict_intensity_df = self.model_mgr.predict_ms2(psm_df)
         predict_intensity_df = predict_intensity_df[self.used_frag_types]

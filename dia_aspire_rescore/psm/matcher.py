@@ -37,7 +37,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
         match_closest: bool = True,
         use_ppm: bool = True,
         tol_value: float = 20.0,
-        n_neighbors: int = 2,
+        n_neighbors: int = 0,
     ):
         self.charged_frag_types = (
             get_charged_frag_types(["b", "y"], 2) if charged_frag_types is None else charged_frag_types
@@ -220,13 +220,24 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
         Returns
         -------
         tuple
-            pd.DataFrame: the `psm_df`.
+            psm_df : pd.DataFrame
+                PSM DataFrame with added columns. Row order is changed, since the PSMs are grouped by 'raw_name'.
+                Fragment indices via `frag_start_idx`, `frag_stop_idx`.
 
-            pd.DataFrame: fragment m/z dataframe in alphabase format.
+            fragment_mz_df : pd.DataFrame
+                Fragment m/z in alphabase wide format.
 
-            pd.DataFrame: the matched fragment intensity dataframe in alphabase format.
+            matched_intensity_df : pd.DataFrame
+                Matched fragment intensities. Rows indexed by `frag_start_idx:frag_stop_idx`.
 
-            pd.DataFrame: the matched mass error in the same dataframe format.
+            matched_mz_err_df : pd.DataFrame
+                Matched mass errors (ppm or Da).
+
+        Notes
+        -----
+        - Output PSMs are reordered by `raw_name` for efficient processing.
+        - If `n_neighbors > 0`, each PSM is replicated `(1 + 2*n_neighbors)` times.
+        - Fragment DataFrames align with psm_df via `frag_start_idx`, `frag_stop_idx`.
         """
         if isinstance(ms_files, list):
             ms_files = parse_ms_files_to_dict(ms_files)
