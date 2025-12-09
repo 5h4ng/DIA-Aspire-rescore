@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import logging
-from typing import Optional
 
 import numba
 import numpy as np
@@ -33,7 +34,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
 
     def __init__(
         self,
-        charged_frag_types: Optional[list] = None,
+        charged_frag_types: list | None = None,
         match_closest: bool = True,
         use_ppm: bool = True,
         tol_value: float = 20.0,
