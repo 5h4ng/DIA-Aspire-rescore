@@ -129,10 +129,6 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
         -------
         pd.DataFrame
             psm_df with added feature columns. Row order preserved.
-
-        Notes
-        -----
-        Internally handles nAA-sorting for `predict_ms2()` and restores original order.
         """
         predict_intensity_df = self.model_mgr.predict_ms2(psm_df)
         predict_intensity_df = predict_intensity_df[self.used_frag_types]
