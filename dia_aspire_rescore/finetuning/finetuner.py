@@ -178,11 +178,6 @@ class FineTuner:
         ------
         RuntimeError
             If ModelManager is not initialized or models not loaded
-
-        Warnings
-        --------
-        Input must be nAA-sorted. Unsorted input causes row misalignment in output.
-        See: https://github.com/MannLabs/alphadia/pull/409
         """
         if self._model_manager is None:
             raise RuntimeError("ModelManager is not initialized")
