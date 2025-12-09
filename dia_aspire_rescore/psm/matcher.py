@@ -195,7 +195,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
     def match_ms2_multi_raw(
         self,
         psm_df: pd.DataFrame,
-        ms_files: tuple[dict, list],
+        ms_files: dict | list,
         ms_file_type: str = "alpharaw_hdf",
         process_num: int = 8,
     ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
@@ -206,10 +206,10 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
         ----------
         psm_df : pd.DataFrame
             Peptide-spectrum matches in alphabase dataframe format.
-        ms_files : tuple[dict, list]
+        ms_files : dict | list
             The absolute or relative paths of MS files.
-            if the type is `dict`, the format will be
-            `{'raw_name1': 'raw_name1.raw', ...}` if `ms_file_type` is `thermo_raw`.
+            If `dict`, the format should be `{'raw_name1': 'path/to/file1', ...}`.
+            If `list`, it should be a list of file paths.
         ms_file_type : str, optional
             MS file type that is already registered in
             :obj:`alpharaw.ms_data_base.ms_reader_provider`.
