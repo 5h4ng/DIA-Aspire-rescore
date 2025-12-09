@@ -158,6 +158,47 @@ class TestDIAPeptideSpectrumMatcher:
         # Compare PSM 1 with expected
         self._compare_fragments(actual_frags_1, expected_frags_1)
 
+    def test_match_ms2_one_raw(self, psm_df, expected_frags_0, test_hdf5_path):
+        """Test match_ms2_one_raw method with single PSM."""
+        matcher = DIAPeptideSpectrumMatcher(n_neighbors=0)
+
+        # Process only first PSM using match_ms2_one_raw
+        psm_df_single = psm_df.iloc[0:1].copy()
+
+        psm_df_matched, fragment_mz_df, matched_intensity_df, matched_mz_err_df = matcher.match_ms2_one_raw(
+            psm_df_single,
+            test_hdf5_path,
+            "hdf5",
+        )
+
+        psm_df_matched, flat_frag_df = flatten_fragments(
+            precursor_df=psm_df_matched,
+            fragment_mz_df=fragment_mz_df,
+            fragment_intensity_df=matched_intensity_df,
+        )
+
+        # Get fragments for PSM 0
+        frag_start = psm_df_matched.iloc[0]["flat_frag_start_idx"]
+        frag_stop = psm_df_matched.iloc[0]["flat_frag_stop_idx"]
+        actual_frags = flat_frag_df.iloc[frag_start:frag_stop].copy()
+        self._compare_fragments(actual_frags, expected_frags_0)
+
+    def test_match_ms2_one_raw_multiple_raw_files_error(self, psm_df, test_hdf5_path):
+        """Test that match_ms2_one_raw raises error with multiple raw files."""
+        matcher = DIAPeptideSpectrumMatcher(n_neighbors=0)
+
+        # Create a DataFrame with two different raw files
+        psm_df_multi = psm_df.iloc[0:2].copy()
+        psm_df_multi.loc[psm_df_multi.index[1], "raw_name"] = "different_raw_file"
+
+        # Should raise ValueError
+        with pytest.raises(ValueError, match="should contain only one raw file"):
+            matcher.match_ms2_one_raw(
+                psm_df_multi,
+                test_hdf5_path,
+                "hdf5",
+            )
+
     def _compare_fragments(self, actual_frags, expected_frags):
         """Helper method to compare fragment DataFrames."""
         # Sort by mz for comparison
