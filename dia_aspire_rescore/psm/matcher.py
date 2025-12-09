@@ -221,7 +221,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
         -------
         tuple
             psm_df : pd.DataFrame
-                PSM DataFrame with added columns. Row order is changed, since the PSMs are grouped by 'raw_name'.
+                PSM DataFrame with added columns. PSMs are grouped by 'raw_name'.
                 Fragment indices via `frag_start_idx`, `frag_stop_idx`.
 
             fragment_mz_df : pd.DataFrame
@@ -231,11 +231,11 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
                 Matched fragment intensities. Rows indexed by `frag_start_idx:frag_stop_idx`.
 
             matched_mz_err_df : pd.DataFrame
-                Matched mass errors (ppm or Da).
+                Matched mass errors (ppm or Da). np.inf if a fragment is not matched.
 
         Notes
         -----
-        - Output PSMs are reordered by `raw_name` for efficient processing.
+        - Output PSMs are grouped by `raw_name` for efficient processing.
         - If `n_neighbors > 0`, each PSM is replicated `(1 + 2*n_neighbors)` times.
         - Fragment DataFrames align with psm_df via `frag_start_idx`, `frag_stop_idx`.
         """
@@ -250,6 +250,42 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
             self.matched_intensity_df,
             self.matched_mz_err_df,
         )
+
+    def match_ms2_one_raw(
+        self,
+        psm_df_one_raw: pd.DataFrame,
+        ms_file: str,
+        ms_file_type: str = "alpharaw_hdf",
+    ) -> pd.DataFrame:
+        """
+        Match psm_df_one_raw against ms2_file
+
+        Parameters
+        ----------
+        psm_df_one_raw : pd.DataFrame
+            PSM DataFrame that contains only one raw file.
+        ms_file : str
+            The path to the MS2 file.
+        ms_file_type : str, optional
+            The type of the MS2 file.
+
+        Returns
+        -------
+        tuple
+            psm_df_one_raw : pd.DataFrame
+                PSM DataFrame that contains only one raw file.
+            fragment_mz_df : pd.DataFrame
+                Fragment m/z in alphabase wide format.
+            matched_intensity_df : pd.DataFrame
+                Matched fragment intensities. Rows indexed by `frag_start_idx:frag_stop_idx`.
+            matched_mz_err_df : pd.DataFrame
+                Matched mass errors (ppm or Da). np.inf if a fragment is not matched.
+        """
+        if len(psm_df_one_raw.raw_name.unique()) > 1:
+            raise ValueError("psm_df_one_raw should contain only one raw file.")
+
+        ms_file_dict = {psm_df_one_raw.raw_name.values[0]: ms_file}
+        return self.match_ms2_multi_raw(psm_df_one_raw, ms_file_dict, ms_file_type)
 
 
 @numba.njit
