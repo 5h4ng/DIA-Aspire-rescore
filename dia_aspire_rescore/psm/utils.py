@@ -29,7 +29,7 @@ def refine_matcher_results(
     tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]
         The refined PSM dataframe, fragment mz dataframe, matched intensity dataframe, and matched mz error dataframe.
     """
-    psm_df_new = refine_precursor_df(psm_df.copy())
+    psm_df_new = refine_precursor_df(psm_df)
     reordered_psm_df = reset_frag_idx(psm_df_new)
     reordered_fragment_mz_df = order_matched_matrix(
         reordered_psm_df,
@@ -69,7 +69,7 @@ def prepare_finetuning_input(
     tuple[pd.DataFrame, pd.DataFrame]
         The reordered PSM dataframe and intensity dataframe.
     """
-    psm_df_new = refine_precursor_df(psm_df.copy())
+    psm_df_new = refine_precursor_df(psm_df)
     reordered_psm_df = reset_frag_idx(psm_df_new)
     reordered_intensity_df = order_matched_matrix(
         reordered_psm_df,
