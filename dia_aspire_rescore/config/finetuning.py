@@ -8,6 +8,11 @@ from dia_aspire_rescore.config import ConfigBase
 
 @dataclass
 class FineTuneConfig(ConfigBase):
+    """Fine-tuning configuration for MS2 and RT models."""
+
+    # FDR threshold for selecting training PSMs
+    fdr_threshold: float = 0.01
+
     # Model settings
     instrument: str = "QE"
     nce: float = 27
