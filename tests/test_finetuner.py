@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from alphabase.peptide.precursor import refine_precursor_df
 from peptdeep.model.ms2 import calc_ms2_similarity
 
 from dia_aspire_rescore.config import FineTuneConfig
@@ -25,8 +26,7 @@ def psm_df():
     """Load PSM test data."""
     psm_df_path = TEST_DATA_DIR / "psm_df.parquet"
     df = pd.read_parquet(psm_df_path)
-    df = df.sort_values(by="nAA", ascending=True).reset_index(drop=True)
-    return df
+    return refine_precursor_df(df)
 
 
 @pytest.fixture

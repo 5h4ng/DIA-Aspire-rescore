@@ -1,10 +1,14 @@
+import logging
 from pathlib import Path
 from typing import Any, Optional
 
 import pandas as pd
 from peptdeep.pretrained_models import ModelManager
 
-from dia_aspire_rescore.config import FineTuneConfig
+from dia_aspire_rescore.config import FineTuneConfig, MS2MatchConfig
+from dia_aspire_rescore.psm.matcher import DIAPeptideSpectrumMatcher
+
+logger = logging.getLogger(__name__)
 
 
 class FineTuner:
@@ -114,6 +118,53 @@ class FineTuner:
 
         # TODO: support external models
         self._model_manager.load_installed_models(model_type)
+
+    def train(
+        self,
+        psm_df: pd.DataFrame,
+        ms_file: str,
+        ms_file_format: str = "mzml",
+        ms2_match_config: Optional[MS2MatchConfig] = None,
+        fdr_column: str = "fdr1_search1",
+    ) -> None:
+        """
+        End-to-end training: filter by FDR, match MS2, train models.
+
+        Parameters
+        ----------
+        psm_df : pd.DataFrame
+            PSM DataFrame with FDR values.
+        ms_file : str
+            Path to MS file.
+        ms_file_format : str, optional
+            MS file format, by default "mzml".
+        ms2_match_config : MS2MatchConfig, optional
+            MS2 matching config. If None, uses defaults.
+        fdr_column : str, optional
+            Column name for FDR filtering, by default "fdr1_search1".
+        """
+        ms2_match_config = ms2_match_config or MS2MatchConfig()
+
+        psm_df_train = psm_df[psm_df[fdr_column] < self.config.fdr_threshold].copy()
+        logger.info(f"Selected {len(psm_df_train)} PSMs for training (FDR < {self.config.fdr_threshold})")
+
+        if len(psm_df_train) == 0:
+            logger.warning("No PSMs passed FDR filter, skipping training")
+            return
+
+        matcher = DIAPeptideSpectrumMatcher(
+            match_closest=ms2_match_config.match_closest,
+            use_ppm=ms2_match_config.use_ppm,
+            tol_value=ms2_match_config.tolerance,
+            n_neighbors=0,
+        )
+        psm_df_train, _, matched_intensity_df, _ = matcher.match_ms2_one_raw(psm_df_train, ms_file, ms_file_format)
+        logger.info(f"Matched {len(psm_df_train)} PSMs with spectra")
+
+        logger.info("Training MS2 model...")
+        self.train_ms2(psm_df_train, matched_intensity_df)
+        logger.info("Training RT model...")
+        self.train_rt(psm_df_train)
 
     def train_ms2(
         self,
