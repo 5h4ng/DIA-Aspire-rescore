@@ -31,6 +31,9 @@ dependencies = [
     "torch>=2.8.0",
 ]
 
+[project.scripts]
+dia-aspire-rescore = "dia_aspire_rescore.cli:main"
+
 [project.urls]
 Homepage = "https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore/"
 Repository = "https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore"

@@ -112,7 +112,11 @@ class Pipeline:
     def _create_generator(self, name: str):
         if name == "basic":
             return BasicFeatureGenerator()
-        elif name == "ms2":
+
+        if self.finetuner is None:
+            raise RuntimeError(f"Finetuner is required for '{name}' generator but was not initialized")
+
+        if name == "ms2":
             return MS2FeatureGenerator(
                 model_mgr=self.finetuner.model_manager,
                 ms_files=self.ms_files,
@@ -129,5 +133,5 @@ class Pipeline:
 
     def write_report(self):
         output_path = Path(self.io_config.output_dir) / "psm.csv"
-        self.psm_df.to_csv(output_path)
+        self.psm_df.to_csv(output_path, index=False)
         logger.info(f"Saved to {output_path}")
