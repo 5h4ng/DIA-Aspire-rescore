@@ -122,8 +122,8 @@ class FineTuner:
     def train(
         self,
         psm_df: pd.DataFrame,
-        ms_file: str,
-        ms_file_format: str = "mzml",
+        ms_files: dict[str, str],
+        ms_file_type: str = "mzml",
         ms2_match_config: Optional[MS2MatchConfig] = None,
         fdr_column: str = "fdr1_search1",
     ) -> None:
@@ -134,10 +134,10 @@ class FineTuner:
         ----------
         psm_df : pd.DataFrame
             PSM DataFrame with FDR values.
-        ms_file : str
-            Path to MS file.
-        ms_file_format : str, optional
-            MS file format, by default "mzml".
+        ms_files : dict[str, str]
+            Dict mapping raw_name to file path.
+        ms_file_type : str, optional
+            MS file type, by default "mzml".
         ms2_match_config : MS2MatchConfig, optional
             MS2 matching config. If None, uses defaults.
         fdr_column : str, optional
@@ -158,7 +158,7 @@ class FineTuner:
             tol_value=ms2_match_config.tolerance,
             n_neighbors=0,
         )
-        psm_df_train, _, matched_intensity_df, _ = matcher.match_ms2_one_raw(psm_df_train, ms_file, ms_file_format)
+        psm_df_train, _, matched_intensity_df, _ = matcher.match_ms2_multi_raw(psm_df_train, ms_files, ms_file_type)
         logger.info(f"Matched {len(psm_df_train)} PSMs with spectra")
 
         logger.info("Training MS2 model...")

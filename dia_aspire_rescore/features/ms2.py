@@ -1,9 +1,14 @@
+from typing import ClassVar, Optional
+
 import numpy as np
 import pandas as pd
+from alphabase.peptide.precursor import refine_precursor_df
 from peptdeep.model.ms2 import calc_ms2_similarity
 from peptdeep.pretrained_models import ModelManager
 
+from dia_aspire_rescore.config import MS2MatchConfig
 from dia_aspire_rescore.features.base import BaseFeatureGenerator
+from dia_aspire_rescore.psm.matcher import DIAPeptideSpectrumMatcher
 
 
 class MS2FeatureGenerator(BaseFeatureGenerator):
@@ -19,11 +24,15 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
     TODO: https://oktoberfest.readthedocs.io/en/stable/svm_features.html
     """
 
+    DEFAULT_FRAG_TYPES: ClassVar[list[str]] = ["b_z1", "b_z2", "y_z1", "y_z2"]
+    DEFAULT_SPC_TOP_K: ClassVar[int] = 0  # use all fragments for SPC calculation
+
     def __init__(
         self,
         model_mgr: ModelManager,
-        frag_types: list[str],
-        spc_top_k: int = 10,
+        ms_files: dict[str, str],
+        ms_file_type: str = "mzml",
+        ms2_match_config: Optional[MS2MatchConfig] = None,
     ):
         """
         Initialize MS2FeatureGenerator.
@@ -31,17 +40,23 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
         Parameters
         ----------
         model_mgr : ModelManager
-            ModelManager from peptdeep for intensity prediction
-        frag_types : list[str]
-            List of fragment types (e.g., ['b_z1', 'b_z2', 'y_z1', 'y_z2'])
-        spc_top_k : int, optional
-            Top K fragments for SPC calculation, by default 10
+            ModelManager from peptdeep for intensity prediction.
+        ms_files : dict[str, str]
+            Dict mapping raw_name to file path.
+        ms_file_type : str, optional
+            MS file type, by default "mzml".
+        ms2_match_config : MS2MatchConfig, optional
+            MS2 matching config. If None, uses defaults.
         """
         self.model_mgr = model_mgr
-        self.frag_types = frag_types
-        self.spc_top_k = spc_top_k
+        self.ms_files = ms_files
+        self.ms_file_type = ms_file_type
+        self.ms2_match_config = ms2_match_config or MS2MatchConfig()
+
+        self.frag_types = self.DEFAULT_FRAG_TYPES
+        self.spc_top_k = self.DEFAULT_SPC_TOP_K
         self.used_frag_types = [
-            frag_type for frag_type in frag_types if frag_type in self.model_mgr.ms2_model.charged_frag_types
+            frag_type for frag_type in self.frag_types if frag_type in self.model_mgr.ms2_model.charged_frag_types
         ]
 
     @property
@@ -107,38 +122,39 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
             "pred_yion_rel_to_matched",
         ]
 
-    def generate(
-        self,
-        psm_df: pd.DataFrame,
-        matched_intensity_df: pd.DataFrame,
-        matched_mz_err_df: pd.DataFrame,
-    ) -> pd.DataFrame:
+    def generate(self, psm_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Generate MS2 features.
+        Generate MS2 features. Handles MS2 matching internally.
 
         Parameters
         ----------
         psm_df : pd.DataFrame
-            PSM DataFrame from `match_ms2_multi_raw()`.
-        matched_intensity_df : pd.DataFrame
-            Matched intensities. Must align with psm_df via `frag_start_idx:frag_stop_idx`.
-        matched_mz_err_df : pd.DataFrame
-            Mass errors. Must align with psm_df via `frag_start_idx:frag_stop_idx`.
+            PSM DataFrame.
 
         Returns
         -------
         pd.DataFrame
-            psm_df with added feature columns. Row order preserved.
+            psm_df with added feature columns.
         """
+        matcher = DIAPeptideSpectrumMatcher(
+            match_closest=self.ms2_match_config.match_closest,
+            use_ppm=self.ms2_match_config.use_ppm,
+            tol_value=self.ms2_match_config.tolerance,
+            n_neighbors=0,
+        )
+
+        psm_df = refine_precursor_df(psm_df)
+        psm_df, _, matched_intensity_df, matched_mz_err_df = matcher.match_ms2_multi_raw(
+            psm_df, self.ms_files, self.ms_file_type
+        )
+
         predict_intensity_df = self.model_mgr.predict_ms2(psm_df)
         predict_intensity_df = predict_intensity_df[self.used_frag_types]
 
         psm_df = self._calculate_similarity_all_frags(
             psm_df, predict_intensity_df, matched_intensity_df, matched_mz_err_df
         )
-
         psm_df = self._calculate_similarity_bions(psm_df, predict_intensity_df, matched_intensity_df, matched_mz_err_df)
-
         psm_df = self._calculate_similarity_yions(psm_df, predict_intensity_df, matched_intensity_df, matched_mz_err_df)
 
         return psm_df
