@@ -93,6 +93,9 @@ def plot_target_decoy_dist(
     if ax is None:
         ax = plt.gca()
 
+    default_colors = sns.color_palette()
+    palette = {target_label: default_colors[0], decoy_label: default_colors[1]}
+
     # Prepare data with Type column
     plot_data = data.copy()
     plot_data["Type"] = plot_data[decoy_col].map({0: target_label, 1: decoy_label})
@@ -102,6 +105,8 @@ def plot_target_decoy_dist(
         data=plot_data,
         x=metric,
         hue="Type",
+        hue_order=[target_label, decoy_label],
+        palette=palette,
         ax=ax,
         bins=bins,
         stat=stat,
