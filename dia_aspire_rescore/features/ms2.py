@@ -2,13 +2,13 @@ from typing import ClassVar, Optional
 
 import numpy as np
 import pandas as pd
-from alphabase.peptide.precursor import refine_precursor_df
 from peptdeep.model.ms2 import calc_ms2_similarity
 from peptdeep.pretrained_models import ModelManager
 
 from dia_aspire_rescore.config import MS2MatchConfig
 from dia_aspire_rescore.features.base import BaseFeatureGenerator
 from dia_aspire_rescore.psm.matcher import DIAPeptideSpectrumMatcher
+from dia_aspire_rescore.psm.utils import refine_matcher_results
 
 
 class MS2FeatureGenerator(BaseFeatureGenerator):
@@ -143,9 +143,12 @@ class MS2FeatureGenerator(BaseFeatureGenerator):
             n_neighbors=0,
         )
 
-        psm_df = refine_precursor_df(psm_df)
         psm_df, _, matched_intensity_df, matched_mz_err_df = matcher.match_ms2_multi_raw(
             psm_df, self.ms_files, self.ms_file_type
+        )
+
+        psm_df, _, matched_intensity_df, matched_mz_err_df = refine_matcher_results(
+            psm_df, _, matched_intensity_df, matched_mz_err_df
         )
 
         predict_intensity_df = self.model_mgr.predict_ms2(psm_df)
