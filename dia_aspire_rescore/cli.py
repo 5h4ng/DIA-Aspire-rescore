@@ -2,11 +2,31 @@
 
 import logging
 import sys
+import warnings
 
 import click
 
-from dia_aspire_rescore.config import FineTuneConfig, IOConfig
-from dia_aspire_rescore.pipeline import Pipeline, find_ms_files
+
+def setup_warnings() -> None:
+    warnings.filterwarnings(
+        "ignore",
+        message=r"mask_modloss is deprecated.*",
+        category=UserWarning,
+        module="peptdeep.model.ms2",
+    )
+
+    warnings.filterwarnings(
+        "ignore",
+        message="Dotnet-based dependencies could not be loaded",
+        category=UserWarning,
+        module="alpharaw",  # only involve mzml files in this project
+    )
+
+
+setup_warnings()
+
+from dia_aspire_rescore.config import FineTuneConfig, IOConfig  # noqa: E402
+from dia_aspire_rescore.pipeline import Pipeline, find_ms_files  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -132,12 +152,27 @@ def run(config: str, verbose: bool):
     raise SystemExit(1)
 
 
-def main():
-    cli()
+def main() -> None:
+    """Entry point for the CLI application."""
+    try:
+        cli()
+    except KeyboardInterrupt:
+        logger.info("Interrupted by user")
+        sys.exit(130)  # Standard exit code for SIGINT
+    except Exception as e:
+        logger.error(f"Fatal error: {e}", exc_info=True)
+        sys.exit(1)
 
 
-def setup_logging(verbose: bool):
-    # Default to INFO level to show pipeline progress
+def setup_logging(verbose: bool) -> None:
+    """
+    Configure logging for the application.
+
+    Parameters
+    ----------
+    verbose : bool
+        If True, set log level to DEBUG; otherwise INFO.
+    """
     level = logging.DEBUG if verbose else logging.INFO
     logging.basicConfig(
         level=level,
@@ -147,8 +182,9 @@ def setup_logging(verbose: bool):
         force=True,
     )
 
-    logging.getLogger("alphabase").setLevel(logging.WARNING)
-    logging.getLogger("peptdeep").setLevel(logging.WARNING)
+    logging.getLogger("alphabase").setLevel(logging.ERROR)
+    logging.getLogger("peptdeep").setLevel(logging.ERROR)
+    logging.getLogger("alpharaw").setLevel(logging.ERROR)
 
 
 if __name__ == "__main__":
