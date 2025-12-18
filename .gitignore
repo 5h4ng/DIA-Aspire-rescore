@@ -1,5 +1,6 @@
 data/raw
 docs/source
+notebooks/output
 .DS_Store
 .hdf5
 
