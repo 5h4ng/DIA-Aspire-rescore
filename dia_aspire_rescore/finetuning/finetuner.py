@@ -146,12 +146,13 @@ class FineTuner:
         ms2_match_config = ms2_match_config or MS2MatchConfig()
 
         psm_df_train = psm_df[psm_df[fdr_column] < self.config.fdr_threshold].copy()
-        logger.info(f"Selected {len(psm_df_train)} PSMs for training (FDR < {self.config.fdr_threshold})")
+        logger.info(f"{len(psm_df_train)} PSMs passed finetuning FDR threshold ({self.config.fdr_threshold})")
 
         if len(psm_df_train) == 0:
-            logger.warning("No PSMs passed FDR filter, skipping training")
+            logger.warning("No PSMs passed finetuning FDR threshold, skipping training")
             return
 
+        logger.info("Matching MS2 spectra for finetuning...")
         matcher = DIAPeptideSpectrumMatcher(
             match_closest=ms2_match_config.match_closest,
             use_ppm=ms2_match_config.use_ppm,
@@ -159,7 +160,6 @@ class FineTuner:
             n_neighbors=0,
         )
         psm_df_train, _, matched_intensity_df, _ = matcher.match_ms2_multi_raw(psm_df_train, ms_files, ms_file_type)
-        logger.info(f"Matched {len(psm_df_train)} PSMs with spectra")
 
         logger.info("Training MS2 model...")
         self.train_ms2(psm_df_train, matched_intensity_df)

@@ -38,6 +38,6 @@ class FineTuneConfig(ConfigBase):
     psm_num_per_mod_to_train_rt_ccs: int = 50
 
     # General settings
-    train_verbose: bool = True
+    train_verbose: bool = False
     thread_num: int = 36
     # model_path: Optional[str] = None # TODO: support external models
