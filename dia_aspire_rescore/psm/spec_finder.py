@@ -64,7 +64,7 @@ def find_DIA_spec_idxes_by_rt(
     ----------
     spectrum_df : pd.DataFrame
         DataFrame containing spectrum information with columns:
-        PsmDfCols.RT, PsmDfCols.ISOLATION_LOWER_MZ, PsmDfCols.ISOLATION_UPPER_MZ.
+        SpectrumDfCols.RT, SpectrumDfCols.ISOLATION_LOWER_MZ, SpectrumDfCols.ISOLATION_UPPER_MZ.
     query_rts : np.ndarray
         Query RT values.
     query_precursor_mzs : np.ndarray

@@ -14,5 +14,12 @@ class SpectrumDfCols:
     MS_LEVEL = "ms_level"
     PEAK_START_IDX = "peak_start_idx"
     PEAK_STOP_IDX = "peak_stop_idx"
+
+
+class PsmDfColsExt(PsmDfCols):
+    """Column names for extended PSM dataframe."""
+
+    SPEC_START_IDX = "spec_start_idx"
+    SPEC_STOP_IDX = "spec_stop_idx"
     FRAG_START_IDX = "frag_start_idx"
     FRAG_STOP_IDX = "frag_stop_idx"

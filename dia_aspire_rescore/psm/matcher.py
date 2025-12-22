@@ -18,7 +18,7 @@ from alpharaw.ms_data_base import (
 )
 from alpharaw.utils.ms_path_utils import parse_ms_files_to_dict
 
-from dia_aspire_rescore.constants.spectrum import SpectrumDfCols
+from dia_aspire_rescore.constants.spectrum import PsmDfColsExt
 from dia_aspire_rescore.psm.spec_finder import find_dia_spec_idxes_same_window
 
 logger = logging.getLogger(__name__)
@@ -64,8 +64,8 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
         len_frags = len(fragment_mz_df) // self.max_spec_per_query
         for i in range(self.max_spec_per_query):
             psm_df = self.psm_df.copy()
-            psm_df[SpectrumDfCols.FRAG_START_IDX] = psm_df.frag_start_idx + i * len_frags
-            psm_df[SpectrumDfCols.FRAG_STOP_IDX] = psm_df.frag_stop_idx + i * len_frags
+            psm_df[PsmDfColsExt.FRAG_START_IDX] = psm_df.frag_start_idx + i * len_frags
+            psm_df[PsmDfColsExt.FRAG_STOP_IDX] = psm_df.frag_stop_idx + i * len_frags
             psm_df_list.append(psm_df)
         self.psm_df = pd.concat(psm_df_list, ignore_index=True)
 
@@ -99,7 +99,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
             `psm_df_one_raw`
         """
         psm_df_one_raw = psm_df_one_raw.reset_index(drop=True)
-        psm_df_one_raw[SpectrumDfCols.SPEC_IDX] = -1
+        psm_df_one_raw[PsmDfColsExt.SPEC_IDX] = -1
 
         if raw_name in self._ms_file_dict:
             raw_data = load_ms_data(
@@ -152,7 +152,7 @@ class DIAPeptideSpectrumMatcher(PepSpecMatch):
                     )
                     all_spec_idxes[psm_idxes + psm_origin_len * i] = spec_idxes[:, i]
                     # assign spec_idx to psm_df_one_raw
-                    psm_df_one_raw.loc[psm_idxes + psm_origin_len * i, SpectrumDfCols.SPEC_IDX] = absolute_spec_idxes[
+                    psm_df_one_raw.loc[psm_idxes + psm_origin_len * i, PsmDfColsExt.SPEC_IDX] = absolute_spec_idxes[
                         :, i
                     ]
 

@@ -1,7 +1,7 @@
 import pandas as pd
 from alphabase.peptide.precursor import refine_precursor_df
 
-from dia_aspire_rescore.constants.spectrum import SpectrumDfCols
+from dia_aspire_rescore.constants.spectrum import PsmDfColsExt
 
 
 def refine_matcher_results(
@@ -106,8 +106,8 @@ def reset_frag_idx(
     new_frag_start_idx = accumulated_frags - number_of_frags
     new_frag_stop_idx = accumulated_frags
 
-    psm_df_new[SpectrumDfCols.FRAG_START_IDX] = new_frag_start_idx
-    psm_df_new[SpectrumDfCols.FRAG_STOP_IDX] = new_frag_stop_idx
+    psm_df_new[PsmDfColsExt.FRAG_START_IDX] = new_frag_start_idx
+    psm_df_new[PsmDfColsExt.FRAG_STOP_IDX] = new_frag_stop_idx
     return psm_df_new
 
 
@@ -136,11 +136,11 @@ def order_matched_matrix(
     """
     reordered = original_matched_matrix.copy()
     for i in range(len(original_psm_df)):
-        new_start_idx = refined_psm_df.iloc[i][SpectrumDfCols.FRAG_START_IDX]
-        new_end_idx = refined_psm_df.iloc[i][SpectrumDfCols.FRAG_STOP_IDX]
+        new_start_idx = refined_psm_df.iloc[i][PsmDfColsExt.FRAG_START_IDX]
+        new_end_idx = refined_psm_df.iloc[i][PsmDfColsExt.FRAG_STOP_IDX]
 
-        old_start_idx = original_psm_df.iloc[i][SpectrumDfCols.FRAG_START_IDX]
-        old_end_idx = original_psm_df.iloc[i][SpectrumDfCols.FRAG_STOP_IDX]
+        old_start_idx = original_psm_df.iloc[i][PsmDfColsExt.FRAG_START_IDX]
+        old_end_idx = original_psm_df.iloc[i][PsmDfColsExt.FRAG_STOP_IDX]
 
         reordered.iloc[new_start_idx:new_end_idx, :] = original_matched_matrix.iloc[old_start_idx:old_end_idx, :]
     return reordered
