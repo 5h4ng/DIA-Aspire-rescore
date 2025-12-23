@@ -149,6 +149,8 @@ def extract_xic_for_mzs(
         Peak start indices for each spectrum.
     peak_stop_idxes : np.ndarray
         Peak stop indices for each spectrum.
+    match_closest : bool, default=True
+        Whether to match the closest peak instead of the highest intensity peak.
 
     Returns
     -------
@@ -203,6 +205,7 @@ def extract_xic(
     precursor_mz: float | None = None,
     ppm_tolerance: float = 20.0,
     ms_level: int = 2,
+    match_closest: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
     High-level API for XIC extraction.
@@ -225,6 +228,8 @@ def extract_xic(
         m/z tolerance in ppm.
     ms_level : int, default=2
         1 for MS1 (precursor), 2 for MS2 (fragment).
+    match_closest : bool, default=True
+        Whether to match the closest peak instead of the highest intensity peak.
 
     Returns
     -------
@@ -279,6 +284,7 @@ def extract_xic(
         peak_intensities,
         peak_start_idxes,
         peak_stop_idxes,
+        match_closest,
     )
 
     rt_values = spec_rts[spec_idxes]
