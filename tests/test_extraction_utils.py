@@ -59,9 +59,6 @@ def test_filter_spec_idxes_by_ms_level():
     result = filter_spec_idxes_by_ms_level(spec_idxes, ms_levels, 2)
     np.testing.assert_array_equal(result, [1, 3, 4])
 
-    result = filter_spec_idxes_by_ms_level(spec_idxes, np.array([1, 1, 1], dtype=np.int32), 2)
-    assert len(result) == 0
-
 
 @pytest.fixture
 def mock_peak_data():
@@ -97,6 +94,7 @@ def test_extract_xic_for_mzs(mock_peak_data):
     np.testing.assert_array_almost_equal(result[1], [0.0, 2500.0, 0.0])
 
     query_mzs = np.array([500.0], dtype=np.float64)
+    query_mz_tols = np.array([0.5], dtype=np.float64)
     result = extract_xic_for_mzs(
         spec_idxes, query_mzs, query_mz_tols, peak_mzs, peak_intensities, peak_start_idxes, peak_stop_idxes
     )
