@@ -1,4 +1,4 @@
-from typing import Optional
+from __future__ import annotations
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -22,7 +22,7 @@ def plot_xic_ms1(
     show_boundary: bool = True,
     show_legend: bool = True,
     ppm_tolerance: float = 20.0,
-    ax: Optional[plt.Axes] = None,
+    ax: plt.Axes | None = None,
     **kwargs,
 ) -> plt.Axes:
     """
@@ -190,7 +190,7 @@ def plot_xic_ms2(
     show_legend: bool = True,
     charged_frag_types: list[str] | None = None,
     ppm_tolerance: float = 20.0,
-    ax: Optional[plt.Axes] = None,
+    ax: plt.Axes | None = None,
     **kwargs,
 ) -> plt.Axes:
     """
@@ -228,7 +228,7 @@ def plot_xic_ms2(
     show_legend : bool, optional
         Whether to display legend with fragment type labels (e.g., b_z1, y_z1).
         Default is True.
-    charged_frag_types : list[str], optional
+    charged_frag_types : list[str] | None, optional
         Fragment types to generate. If None, defaults to
         `get_charged_frag_types(["b", "y"], 2)` (b/z1, b/z2, y/z1, y/z2).
     ppm_tolerance : float, optional
