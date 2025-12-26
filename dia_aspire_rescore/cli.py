@@ -8,9 +8,10 @@ import click
 
 
 def setup_warnings() -> None:
+    """Configure warning filters before importing heavy dependencies."""
     warnings.filterwarnings(
         "ignore",
-        message=r"mask_modloss is deprecated.*",
+        message="mask_modloss is deprecated",
         category=UserWarning,
         module="peptdeep.model.ms2",
     )
@@ -185,6 +186,8 @@ def setup_logging(verbose: bool) -> None:
     logging.getLogger("alphabase").setLevel(logging.ERROR)
     logging.getLogger("peptdeep").setLevel(logging.ERROR)
     logging.getLogger("alpharaw").setLevel(logging.ERROR)
+    # Re-apply warning filters after logging setup (in case logging reset them)
+    setup_warnings()
 
 
 if __name__ == "__main__":
