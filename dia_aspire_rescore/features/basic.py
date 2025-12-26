@@ -11,6 +11,8 @@ class BasicFeatureGenerator(BaseFeatureGenerator):
     Features:
     - charge_1 through charge_7: Charge one-hot encoding (charge_gt_6 for charges > 6)
     - mod_num: Count of modifications (excluding Carbamidomethyl@C)
+    - pep_length: Length of the peptide sequence
+    - precursor_mz: Precursor m/z of the peptide
     """
 
     def __init__(self):
@@ -28,6 +30,8 @@ class BasicFeatureGenerator(BaseFeatureGenerator):
             "charge_6",
             "charge_gt_6",
             "mod_num",
+            "pep_length",
+            "precursor_mz",  # already in psm_df
         ]
 
     def generate(self, psm_df: pd.DataFrame) -> pd.DataFrame:
@@ -37,7 +41,7 @@ class BasicFeatureGenerator(BaseFeatureGenerator):
         Parameters
         ----------
         psm_df : pd.DataFrame
-            PSM DataFrame containing 'charge' and 'mods' columns
+            PSM DataFrame containing 'charge', 'mods', and 'precursor_mz' columns
 
         Returns
         -------
@@ -73,5 +77,6 @@ class BasicFeatureGenerator(BaseFeatureGenerator):
             return mod_count
 
         psm_df["mod_num"] = psm_df.mods.apply(_mod_count)
+        psm_df["pep_length"] = psm_df.sequence.apply(len)
 
         return psm_df

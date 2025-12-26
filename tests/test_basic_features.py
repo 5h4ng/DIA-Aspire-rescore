@@ -26,6 +26,8 @@ class TestBasicFeatureGenerator:
             "charge_6",
             "charge_gt_6",
             "mod_num",
+            "pep_length",
+            "precursor_mz",
         ]
         assert basic_generator.feature_names == expected_names
 
@@ -35,6 +37,7 @@ class TestBasicFeatureGenerator:
             "sequence": ["P1", "P2", "P3", "P6", "P7"],
             "charge": [1, 2, 3, 6, 7],
             "mods": [""] * 5,
+            "precursor_mz": [100.0, 200.0, 300.0, 600.0, 700.0],
         })
 
         result_df = basic_generator.generate(test_df.copy())
@@ -60,7 +63,12 @@ class TestBasicFeatureGenerator:
 
     def test_mod_count_no_mods(self, basic_generator):
         """Test modification counting with no modifications."""
-        test_df = pd.DataFrame({"sequence": ["PEPTIDE"], "charge": [2], "mods": [""]})
+        test_df = pd.DataFrame({
+            "sequence": ["PEPTIDE"],
+            "charge": [2],
+            "mods": [""],
+            "precursor_mz": [400.0],
+        })
         result_df = basic_generator.generate(test_df.copy())
         assert result_df.loc[0, "mod_num"] == 0
 
@@ -70,6 +78,7 @@ class TestBasicFeatureGenerator:
             "sequence": ["PEPTIDE"],
             "charge": [2],
             "mods": ["Carbamidomethyl@C"],
+            "precursor_mz": [400.0],
         })
         result_df = basic_generator.generate(test_df.copy())
         assert result_df.loc[0, "mod_num"] == 0
@@ -80,6 +89,7 @@ class TestBasicFeatureGenerator:
             "sequence": ["P1", "P2"],
             "charge": [2, 2],
             "mods": ["Oxidation@M", "Oxidation@M;Phospho@S;Acetyl@K"],
+            "precursor_mz": [300.0, 350.0],
         })
         result_df = basic_generator.generate(test_df.copy())
 
@@ -95,8 +105,33 @@ class TestBasicFeatureGenerator:
             "sequence": ["PEPTIDE"],
             "charge": [2],
             "mods": ["Oxidation@M;Carbamidomethyl@C;Phospho@S"],
+            "precursor_mz": [450.0],
         })
         result_df = basic_generator.generate(test_df.copy())
 
         # Should count only Oxidation@M and Phospho@S, not Carbamidomethyl@C
         assert result_df.loc[0, "mod_num"] == 2
+
+    def test_pep_length(self, basic_generator):
+        """Test peptide length calculation."""
+        test_df = pd.DataFrame({
+            "sequence": ["PEPTIDE", "PEPTIDEKK"],
+            "charge": [2, 2],
+            "mods": ["", ""],
+            "precursor_mz": [400.0, 500.0],
+        })
+        result_df = basic_generator.generate(test_df.copy())
+        assert result_df.loc[0, "pep_length"] == 7
+        assert result_df.loc[1, "pep_length"] == 9
+
+    def test_precursor_mz(self, basic_generator):
+        """Test precursor m/z calculation."""
+        test_df = pd.DataFrame({
+            "sequence": ["PEPTIDE", "PEPTIDEKK"],
+            "charge": [2, 2],
+            "mods": ["", ""],
+            "precursor_mz": [100.0, 500.0],
+        })
+        result_df = basic_generator.generate(test_df.copy())
+        assert result_df.loc[0, "precursor_mz"] == 100.0
+        assert result_df.loc[1, "precursor_mz"] == 500.0
