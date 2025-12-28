@@ -242,12 +242,12 @@ def extract_xic(
     query_mz_tols = query_mzs * ppm_tolerance * 1e-6
 
     spec_rts = spectrum_df[SpectrumDfCols.RT].values
-    ms_levels = spectrum_df[SpectrumDfCols.MS_LEVEL].values.astype(np.int32)
-    peak_start_idxes = spectrum_df[SpectrumDfCols.PEAK_START_IDX].values.astype(np.int64)
-    peak_stop_idxes = spectrum_df[SpectrumDfCols.PEAK_STOP_IDX].values.astype(np.int64)
+    ms_levels = spectrum_df[SpectrumDfCols.MS_LEVEL].values
+    peak_start_idxes = spectrum_df[SpectrumDfCols.PEAK_START_IDX].values
+    peak_stop_idxes = spectrum_df[SpectrumDfCols.PEAK_STOP_IDX].values
 
-    peak_mzs = peak_df["mz"].values.astype(np.float64)
-    peak_intensities = peak_df["intensity"].values.astype(np.float32)
+    peak_mzs = peak_df["mz"].values
+    peak_intensities = peak_df["intensity"].values
 
     spec_idxes = get_spec_idxes_in_rt_window(spec_rts, rt_start, rt_stop)
 
