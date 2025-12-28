@@ -885,6 +885,7 @@ dependencies = [
     { name = "pydantic" },
     { name = "seaborn" },
     { name = "torch" },
+    { name = "tqdm" },
 ]
 
 [package.dev-dependencies]
@@ -915,6 +916,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.11.7" },
     { name = "seaborn", specifier = ">=0.13.2" },
     { name = "torch", specifier = ">=2.8.0" },
+    { name = "tqdm", specifier = ">=4.67.1" },
 ]
 
 [package.metadata.requires-dev]
