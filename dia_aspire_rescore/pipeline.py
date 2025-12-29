@@ -11,7 +11,12 @@ from alpharaw import register_all_readers
 from dia_aspire_rescore.config.finetuning import FineTuneConfig
 from dia_aspire_rescore.config.io import IOConfig
 from dia_aspire_rescore.config.ms2_match import MS2MatchConfig
-from dia_aspire_rescore.features import BasicFeatureGenerator, MS2FeatureGenerator, RTFeatureGenerator
+from dia_aspire_rescore.features import (
+    BasicFeatureGenerator,
+    MS2FeatureGenerator,
+    RTFeatureGenerator,
+    XICFeatureGenerator,
+)
 from dia_aspire_rescore.finetuning import FineTuner
 from dia_aspire_rescore.io import find_ms_files, read_diann2
 
@@ -30,6 +35,9 @@ class Pipeline:
     5. write_report()
     """
 
+    # TODO: unify and clean up the configs
+    # ms2_match_config is not used in the generators
+
     def __init__(
         self,
         io_config: IOConfig,
@@ -40,7 +48,7 @@ class Pipeline:
         self.io_config = io_config
         self.ms2_match_config = ms2_match_config or MS2MatchConfig()
         self.finetune_config = finetune_config or FineTuneConfig()
-        self.feature_generators = feature_generators or ["basic", "ms2", "rt"]
+        self.feature_generators = feature_generators or ["basic", "xic", "ms2", "rt"]
 
         self.psm_df: Optional[pd.DataFrame] = None
         self.finetuner: Optional[FineTuner] = None
@@ -113,6 +121,15 @@ class Pipeline:
         if name == "basic":
             return BasicFeatureGenerator()
 
+        if name == "xic":
+            return XICFeatureGenerator(
+                ms_files=self.ms_files,
+                ms_file_type=self.io_config.ms_file_type,
+                ppm_tolerance=self.ms2_match_config.tolerance,
+                ms2_match_config=self.ms2_match_config,
+            )
+
+        # ms2 and rt generators require finetuner
         if self.finetuner is None:
             raise RuntimeError(f"Finetuner is required for '{name}' generator but was not initialized")
 

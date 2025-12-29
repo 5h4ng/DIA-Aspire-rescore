@@ -29,7 +29,7 @@ class XICFeatureGenerator(BaseFeatureGenerator):
         ms_files: dict[str, str],
         ms_file_type: str = "mzml",
         ppm_tolerance: float = DEFAULT_PPM_TOLERANCE,
-        ms2_match_config: Optional[MS2MatchConfig] = None,
+        ms2_match_config: Optional[MS2MatchConfig] = None,  # TODO:deprecated
     ):
         """
         Initialize XICFeatureGenerator.
