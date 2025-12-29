@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 class XICFeatureGenerator(BaseFeatureGenerator):
     """
-    Generate co-elution features.
+    Generate xic features.
     """
 
     DEFAULT_FRAG_TYPES: ClassVar[list[str]] = ["b_z1", "b_z2", "y_z1", "y_z2"]
@@ -54,20 +54,47 @@ class XICFeatureGenerator(BaseFeatureGenerator):
     @property
     def feature_names(self) -> list[str]:
         return [
-            # cosine correlation features
+            # cosine correlation features (unfiltered)
             "cos_corr_top3_median",
             "cos_corr_top3_mean",
             "cos_corr_top6_median",
             "cos_corr_top6_mean",
             "cos_corr_top12_median",
             "cos_corr_top12_mean",
-            # pearson correlation features
+            # Pearson correlation features (unfiltered)
             "pearson_corr_top3_median",
             "pearson_corr_top3_mean",
             "pearson_corr_top6_median",
             "pearson_corr_top6_mean",
             "pearson_corr_top12_median",
             "pearson_corr_top12_mean",
+            # cosine correlation features (noise filtered)
+            "cos_corr_filtered_top3_median",
+            "cos_corr_filtered_top3_mean",
+            "cos_corr_filtered_top6_median",
+            "cos_corr_filtered_top6_mean",
+            "cos_corr_filtered_top12_median",
+            "cos_corr_filtered_top12_mean",
+            # pearson correlation features (noise filtered)
+            "pearson_corr_filtered_top3_median",
+            "pearson_corr_filtered_top3_mean",
+            "pearson_corr_filtered_top6_median",
+            "pearson_corr_filtered_top6_mean",
+            "pearson_corr_filtered_top12_median",
+            "pearson_corr_filtered_top12_mean",
+            # fragment quality metrics
+            "n_filtered_fragments",
+            "fragment_filter_ratio",
+            # peak shape quality features
+            "peak_symmetry",
+            "peak_fwhm",
+            "peak_jaggedness",
+            "peak_modality",
+            "apex_rt_ratio",
+            "peak_base_width",
+            "peak_tailing_factor",
+            "total_xic_intensity",
+            "max_xic_intensity",
         ]
 
     def generate(
@@ -88,7 +115,6 @@ class XICFeatureGenerator(BaseFeatureGenerator):
         pd.DataFrame
             psm_df with added XIC feature columns.
         """
-
         fragment_mz_df = create_fragment_mz_dataframe(psm_df, self.frag_types)
 
         for feat_name in self.feature_names:
@@ -131,12 +157,16 @@ class XICFeatureGenerator(BaseFeatureGenerator):
         peak_df: pd.DataFrame,
     ) -> np.ndarray:
         """
-        Calculate co-elution features for a single PSM.
+        Calculate XIC co-elution features for a single PSM.
 
         Returns
         -------
         np.ndarray
-            Array of 12 XIC correlation features (dtype=float32).
+            Array of 35 XIC features (dtype=float32):
+            - 12 unfiltered MS2 correlation features
+            - 12 filtered MS2 correlation features
+            - 2 fragment quality metrics
+            - 9 peak shape features
         """
         frag_start = int(psm[PsmDfColsExt.FRAG_START_IDX])
         frag_stop = int(psm[PsmDfColsExt.FRAG_STOP_IDX])
@@ -144,6 +174,8 @@ class XICFeatureGenerator(BaseFeatureGenerator):
 
         query_mzs = frag_mzs.values.flatten()
         query_mzs = query_mzs[query_mzs > 0]
+
+        n_valid_fragments = len(query_mzs)
 
         if len(query_mzs) < 2:
             return np.zeros(len(self.feature_names), dtype=np.float32)
@@ -172,8 +204,39 @@ class XICFeatureGenerator(BaseFeatureGenerator):
         cos_features = _extract_top_k_corr_features(cos_corr_matrix)
         pearson_features = _extract_top_k_corr_features(pearson_corr_matrix)
 
-        # Combine features and convert to numpy array
-        return np.array(cos_features + pearson_features, dtype=np.float32)
+        # noise filtering based on intensity threshold
+        filtered_intensity_matrix, valid_indices = _filter_fragments_by_intensity(
+            intensity_matrix, min_intensity_ratio=0.1, top_n=12
+        )
+
+        n_filtered_fragments = len(valid_indices)
+        fragment_filter_ratio = n_filtered_fragments / n_valid_fragments if n_valid_fragments > 0 else 0.0
+
+        if n_filtered_fragments >= 2:
+            cos_corr_matrix_filtered = _calc_cos_corr_matrix(filtered_intensity_matrix)
+            pearson_corr_matrix_filtered = _calc_pearson_corr_matrix(filtered_intensity_matrix)
+
+            cos_features_filtered = _extract_top_k_corr_features(cos_corr_matrix_filtered)
+            pearson_features_filtered = _extract_top_k_corr_features(pearson_corr_matrix_filtered)
+        else:
+            cos_features_filtered = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+            pearson_features_filtered = (0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+        # peak shape features
+        peak_shape_features = _calculate_peak_shape_features(
+            filtered_intensity_matrix if n_filtered_fragments >= 2 else intensity_matrix
+        )
+
+        all_features = (
+            cos_features
+            + pearson_features
+            + cos_features_filtered
+            + pearson_features_filtered
+            + (float(n_filtered_fragments), fragment_filter_ratio)
+            + peak_shape_features
+        )
+
+        return np.array(all_features, dtype=np.float32)
 
 
 @numba.njit
@@ -271,6 +334,66 @@ def _calc_pearson_corr(
     return numerator / denominator
 
 
+def _filter_fragments_by_intensity(
+    intensity_matrix: np.ndarray,
+    min_intensity_ratio: float = 0.1,
+    top_n: int = 12,
+) -> tuple[np.ndarray, np.ndarray]:
+    """
+    Filter fragments by intensity to remove noise.
+
+    Strategy:
+    1. Calculate max intensity for each fragment across all scans
+    2. Filter fragments with max_intensity > min_intensity_ratio * global_max
+    3. Keep only top_n fragments by max intensity
+
+    Parameters
+    ----------
+    intensity_matrix : np.ndarray
+        Intensity matrix, shape (n_ions, n_specs).
+    min_intensity_ratio : float, default=0.1
+        Minimum intensity ratio relative to global maximum.
+    top_n : int, default=12
+        Maximum number of fragments to keep.
+
+    Returns
+    -------
+    filtered_matrix : np.ndarray
+        Filtered intensity matrix, shape (n_filtered, n_specs).
+    valid_indices : np.ndarray
+        Indices of fragments that passed filtering.
+    """
+    n_ions, n_specs = intensity_matrix.shape
+
+    if n_ions == 0:
+        return np.zeros((0, n_specs), dtype=np.float32), np.array([], dtype=np.int64)
+
+    max_intensities = np.zeros(n_ions, dtype=np.float32)
+    max_intensities = np.max(intensity_matrix, axis=1)
+
+    global_max = np.max(max_intensities)
+
+    if global_max == 0:
+        return np.zeros((0, n_specs), dtype=np.float32), np.array([], dtype=np.int64)
+
+    intensity_threshold = global_max * min_intensity_ratio
+    valid_mask = max_intensities >= intensity_threshold
+
+    valid_indices = np.where(valid_mask)[0]  # (n_valid_fragments,)
+
+    if len(valid_indices) == 0:
+        return np.zeros((0, n_specs), dtype=np.float32), np.array([], dtype=np.int64)
+
+    valid_max_intensities = max_intensities[valid_indices]
+    sorted_idx = np.argsort(valid_max_intensities)[::-1]
+    n_to_keep = min(top_n, len(sorted_idx))
+    top_indices = sorted_idx[:n_to_keep]  # (n_to_keep)
+    final_indices = valid_indices[top_indices]
+    filtered_matrix = intensity_matrix[final_indices, :]
+
+    return filtered_matrix, final_indices
+
+
 @numba.njit
 def _extract_top_k_corr_features(
     corr_matrix: np.ndarray,
@@ -327,3 +450,183 @@ def _extract_top_k_corr_features(
         float(top12_median),
         float(top12_mean),
     )
+
+
+def _calculate_peak_shape_features(
+    intensity_matrix: np.ndarray,
+) -> tuple[float, float, float, float, float, float, float, float, float]:
+    """
+    Calculate peak shape quality features from intensity matrix.
+
+    Parameters
+    ----------
+    intensity_matrix : np.ndarray
+        Intensity matrix, shape (n_ions, n_specs).
+
+    Returns
+    -------
+    tuple of 9 floats
+        (peak_symmetry, peak_fwhm, peak_jaggedness, peak_modality, apex_rt_ratio,
+         peak_base_width, peak_tailing_factor, total_xic_intensity, max_xic_intensity)
+    """
+    if intensity_matrix.shape[0] == 0 or intensity_matrix.shape[1] == 0:
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+    summed_xic = np.sum(intensity_matrix, axis=0)
+
+    if len(summed_xic) == 0 or np.max(summed_xic) == 0:
+        return (0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+    peak_symmetry = float(_calc_peak_symmetry(summed_xic))
+    peak_fwhm = float(_calc_peak_fwhm(summed_xic))
+    peak_jaggedness = float(_calc_peak_jaggedness(summed_xic))
+    peak_modality = float(_calc_peak_modality(summed_xic))
+    apex_rt_ratio = float(_calc_apex_rt_ratio(summed_xic))
+    peak_base_width = float(_calc_peak_base_width(summed_xic))
+    peak_tailing_factor = float(_calc_peak_tailing_factor(summed_xic))
+    total_xic_intensity = float(np.log(np.sum(intensity_matrix) + 1))
+    max_xic_intensity = float(np.log(np.max(intensity_matrix) + 1))
+
+    return (
+        peak_symmetry,
+        peak_fwhm,
+        peak_jaggedness,
+        peak_modality,
+        apex_rt_ratio,
+        peak_base_width,
+        peak_tailing_factor,
+        total_xic_intensity,
+        max_xic_intensity,
+    )
+
+
+@numba.njit
+def _calc_peak_symmetry(xic: np.ndarray) -> float:
+    """Calculate peak symmetry as ratio of left/right half areas."""
+    if len(xic) < 3:
+        return 0.0
+
+    apex_idx = np.argmax(xic)
+    if apex_idx == 0 or apex_idx == len(xic) - 1:
+        return 0.0
+
+    left_area = np.sum(xic[:apex_idx])
+    right_area = np.sum(xic[apex_idx + 1 :])
+
+    if left_area == 0 and right_area == 0:
+        return 1.0
+
+    return min(left_area, right_area) / max(left_area, right_area) if max(left_area, right_area) > 0 else 0.0
+
+
+@numba.njit
+def _calc_peak_fwhm(xic: np.ndarray) -> float:
+    """Calculate full width at half maximum."""
+    if len(xic) < 3:
+        return 0.0
+
+    max_intensity = np.max(xic)
+    if max_intensity == 0:
+        return 0.0
+
+    half_max = max_intensity / 2.0
+
+    above_half_max = xic >= half_max
+    n_above = np.sum(above_half_max)
+
+    return float(n_above)
+
+
+@numba.njit
+def _calc_peak_jaggedness(xic: np.ndarray) -> float:
+    """Calculate jaggedness as smoothness measure (1 - sign_changes / n_points)."""
+    if len(xic) < 3:
+        return 0.0
+
+    diffs = np.diff(xic)
+
+    sign_changes = 0
+    for i in range(len(diffs) - 1):
+        if diffs[i] * diffs[i + 1] < 0:  # indicate sign change
+            sign_changes += 1
+
+    max_changes = len(xic) - 2
+    if max_changes > 0:
+        return 1.0 - (sign_changes / max_changes)
+    return 1.0
+
+
+@numba.njit
+def _calc_peak_modality(xic: np.ndarray) -> float:
+    """Calculate number of local maxima."""
+    if len(xic) < 3:
+        return 1.0
+
+    local_maxima = 0
+    for i in range(1, len(xic) - 1):
+        if xic[i] > xic[i - 1] and xic[i] > xic[i + 1]:
+            local_maxima += 1
+
+    return float(max(1, local_maxima))
+
+
+@numba.njit
+def _calc_apex_rt_ratio(xic: np.ndarray) -> float:
+    """Calculate position of apex relative to peak boundaries."""
+    if len(xic) < 2:
+        return 0.5
+
+    apex_idx = np.argmax(xic)
+    return float(apex_idx) / float(len(xic) - 1)
+
+
+@numba.njit
+def _calc_peak_base_width(xic: np.ndarray) -> float:
+    """Calculate width at 10% of max intensity."""
+    if len(xic) < 3:
+        return 0.0
+
+    max_intensity = np.max(xic)
+    if max_intensity == 0:
+        return 0.0
+
+    threshold = max_intensity * 0.1
+
+    above_threshold = xic >= threshold
+    n_above = np.sum(above_threshold)
+
+    return float(n_above)
+
+
+@numba.njit
+def _calc_peak_tailing_factor(xic: np.ndarray) -> float:
+    """Calculate tailing factor as right_width / left_width at 10% height."""
+    if len(xic) < 3:
+        return 1.0
+
+    apex_idx = np.argmax(xic)
+    max_intensity = xic[apex_idx]
+
+    if max_intensity == 0:
+        return 1.0
+
+    threshold = max_intensity * 0.1
+
+    left_width = 0
+    for i in range(apex_idx, -1, -1):
+        if xic[i] >= threshold:
+            left_width += 1
+        else:
+            break
+
+    right_width = 0
+    for i in range(apex_idx, len(xic)):
+        if xic[i] >= threshold:
+            right_width += 1
+        else:
+            break
+
+    if left_width == 0:
+        return 1.0
+
+    return float(right_width) / float(left_width)
