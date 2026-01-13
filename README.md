@@ -11,31 +11,68 @@ A deep learning–driven rescoring module for DIA-NN identification in the DIA-A
 - **Github repository**: <https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/>
 - **Documentation** <https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore/>
 
-## Getting started with your project
+## Installation
 
-### 1. Create a New Repository
-
-First, create a repository on GitHub with the same name as this project, and then run the following commands:
+### For Users
 
 ```bash
-git init -b main
-git add .
-git commit -m "init commit"
-git remote add origin git@github.com:https://github.com/5h4ng/DIA-Aspire-Rescore.git
-git push -u origin main
+pip install git+https://github.com/5h4ng/DIA-Aspire-rescore.git
 ```
 
-### 2. Set Up Your Development Environment
+Or install from source:
 
-Then, install the environment and the pre-commit hooks with
+```bash
+git clone https://github.com/5h4ng/DIA-Aspire-rescore.git
+cd DIA-Aspire-rescore
+pip install .
+```
+
+### For Developers
+
+Requires [uv](https://docs.astral.sh/uv/):
+
+```bash
+git clone https://github.com/5h4ng/DIA-Aspire-rescore.git
+cd DIA-Aspire-rescore
+make install  # or: uv sync
+```
+
+## Quick Start
+
+### Generate Rescoring Features
+
+```bash
+dia-aspire-rescore generate-features \
+    --report path/to/diann_report.parquet \
+    --ms-file-dir path/to/ms_files/ \
+    --ms-file-type mzml \
+    --output-dir ./output
+```
+
+### Chromatogram Extraction based on Spectral Library
+
+```bash
+dia-aspire-rescore extract-xic \
+    --report path/to/diann_report.parquet \
+    --speclib path/to/speclib.tsv \
+    --ms-file-dir path/to/ms_files/ \
+    --ms-file-type mzml \
+    --output-dir ./output/xic \
+```
+
+## For Developers
+
+### Setup Development Environment
+
+Requires [uv](https://docs.astral.sh/uv/):
 
 ```bash
 make install
 ```
 
-This will also generate your `uv.lock` file
+This will also generate your `uv.lock` file and install pre-commit hooks.
 
-### 3. Run the pre-commit hooks
+### Development Workflow
 
 Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
 
@@ -43,14 +80,10 @@ Initially, the CI/CD pipeline might be failing due to formatting issues. To reso
 uv run pre-commit run -a
 ```
 
-### 4. Commit the changes
-
-Lastly, commit the changes made by the two steps above to your repository.
+Run tests:
 
 ```bash
-git add .
-git commit -m 'Fix formatting issues'
-git push origin main
+make test
 ```
 
 You are now ready to start development on your project!
