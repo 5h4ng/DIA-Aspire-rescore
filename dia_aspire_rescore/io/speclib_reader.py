@@ -1,4 +1,4 @@
-# dia_aspire_rescore/io/speclib_reader.py
+from __future__ import annotations
 
 from pathlib import Path
 
