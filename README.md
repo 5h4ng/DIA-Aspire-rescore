@@ -6,40 +6,23 @@
 [![Commit activity](https://img.shields.io/github/commit-activity/m/https://github.com/5h4ng/DIA-Aspire-Rescore)](https://img.shields.io/github/commit-activity/m/https://github.com/5h4ng/DIA-Aspire-Rescore)
 [![License](https://img.shields.io/github/license/https://github.com/5h4ng/DIA-Aspire-Rescore)](https://img.shields.io/github/license/https://github.com/5h4ng/DIA-Aspire-Rescore)
 
-A deep learning–driven rescoring module for DIA-NN identification in the DIA-Aspire pipeline.
+A rescoring module for DIA-Aspire.
 
 - **Github repository**: <https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/>
-- **Documentation** <https://https://github.com/5h4ng.github.io/DIA-Aspire-Rescore/>
 
 ## Installation
 
-### For Users
+Install directly from GitHub using pip:
 
 ```bash
 pip install git+https://github.com/5h4ng/DIA-Aspire-rescore.git
 ```
 
-Or install from source:
-
-```bash
-git clone https://github.com/5h4ng/DIA-Aspire-rescore.git
-cd DIA-Aspire-rescore
-pip install .
-```
-
-### For Developers
-
-Requires [uv](https://docs.astral.sh/uv/):
-
-```bash
-git clone https://github.com/5h4ng/DIA-Aspire-rescore.git
-cd DIA-Aspire-rescore
-make install  # or: uv sync
-```
-
 ## Quick Start
 
 ### Generate Rescoring Features
+
+Generate comprehensive features for rescoring DIA-NN identifications:
 
 ```bash
 dia-aspire-rescore generate-features \
@@ -49,7 +32,9 @@ dia-aspire-rescore generate-features \
     --output-dir ./output
 ```
 
-### Chromatogram Extraction based on Spectral Library
+### Chromatogram Extraction
+
+Extract ion chromatograms based on the spectral library:
 
 ```bash
 dia-aspire-rescore extract-xic \
@@ -57,50 +42,33 @@ dia-aspire-rescore extract-xic \
     --speclib path/to/speclib.tsv \
     --ms-file-dir path/to/ms_files/ \
     --ms-file-type mzml \
-    --output-dir ./output/xic \
+    --output-dir ./output/xic
 ```
 
 ## For Developers
 
-### Setup Development Environment
+### Requirements
 
-Requires [uv](https://docs.astral.sh/uv/):
+- Python 3.9–3.13
+- Git
+- [uv](https://docs.astral.sh/uv/)
+
+### Setup
 
 ```bash
-make install
+git clone https://github.com/5h4ng/DIA-Aspire-rescore.git
+cd DIA-Aspire-rescore
+uv sync
 ```
 
-This will also generate your `uv.lock` file and install pre-commit hooks.
-
-### Development Workflow
-
-Initially, the CI/CD pipeline might be failing due to formatting issues. To resolve those run:
+### Common Commands
 
 ```bash
-uv run pre-commit run -a
-```
-
-Run tests:
-
-```bash
+# Lint / format 
+make check
+# Tests
 make test
 ```
-
-You are now ready to start development on your project!
-The CI/CD pipeline will be triggered when you open a pull request, merge to main, or when you create a new release.
-
-To finalize the set-up for publishing to PyPI, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/publishing/#set-up-for-pypi).
-For activating the automatic documentation with MkDocs, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/mkdocs/#enabling-the-documentation-on-github).
-To enable the code coverage reports, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/codecov/).
-
-## Releasing a new version
-
-- Create an API Token on [PyPI](https://pypi.org/).
-- Add the API Token to your projects secrets with the name `PYPI_TOKEN` by visiting [this page](https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/settings/secrets/actions/new).
-- Create a [new release](https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/releases/new) on Github.
-- Create a new tag in the form `*.*.*`.
-
-For more details, see [here](https://fpgmaas.github.io/cookiecutter-uv/features/cicd/#how-to-trigger-a-release).
 
 ---
 
