@@ -1,5 +1,3 @@
-"""Configuration for MS2 spectrum matching."""
-
 from dataclasses import dataclass
 
 from dia_aspire_rescore.config.base import ConfigBase

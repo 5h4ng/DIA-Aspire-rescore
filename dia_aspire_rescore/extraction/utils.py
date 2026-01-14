@@ -1,5 +1,3 @@
-"""Core numba-accelerated functions for XIC extraction."""
-
 from __future__ import annotations
 
 import numba as nb

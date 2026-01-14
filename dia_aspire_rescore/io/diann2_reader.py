@@ -1,5 +1,3 @@
-# dia_aspire_rescore/io/diann2_reader.py
-
 from pathlib import Path
 
 import numpy as np

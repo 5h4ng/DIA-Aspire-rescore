@@ -1,5 +1,3 @@
-"""Configuration for input/output paths and formats."""
-
 from dataclasses import dataclass
 
 from dia_aspire_rescore.config.base import ConfigBase

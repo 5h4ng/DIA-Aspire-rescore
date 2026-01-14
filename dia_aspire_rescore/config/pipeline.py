@@ -1,5 +1,3 @@
-"""Configuration for the rescoring pipeline."""
-
 from dataclasses import dataclass, field
 
 from dia_aspire_rescore.config.base import ConfigBase

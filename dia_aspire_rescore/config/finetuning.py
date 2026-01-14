@@ -1,5 +1,3 @@
-"""Configuration for fine-tuning AlphaPeptDeep models."""
-
 from dataclasses import dataclass
 from typing import Optional
 
