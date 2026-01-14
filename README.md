@@ -64,7 +64,7 @@ uv sync
 ### Common Commands
 
 ```bash
-# Lint / format 
+# Lint / format
 make check
 # Tests
 make test
