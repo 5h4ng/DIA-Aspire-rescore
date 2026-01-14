@@ -1,6 +1,6 @@
 [project]
 name = "DIA-Aspire-Rescore"
-version = "0.1.0"
+version = "0.1.1"
 description = "A deep learning–driven rescoring module for DIA-NN identification in the DIA-Aspire pipeline."
 authors = [{ name = "Zixiang Shang", email = "steven5h4ng@gmail.com" }]
 readme = "README.md"
