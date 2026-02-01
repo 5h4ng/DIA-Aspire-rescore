@@ -8,7 +8,7 @@
 
 A rescoring module for DIA-Aspire.
 
-- **Github repository**: <https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/>
+- **Github repository**: <https://github.com/5h4ng/DIA-Aspire-rescore/>
 
 ## Installation
 
@@ -69,6 +69,12 @@ make check
 # Tests
 make test
 ```
+
+## TODO
+
+- [ ] Generate rescore engine compatible output (PIN file format)
+- [ ] Integrate mokapot as built-in rescore engine
+- [ ] Feature refinement and expansion
 
 ---
 
