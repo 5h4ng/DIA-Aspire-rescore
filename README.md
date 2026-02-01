@@ -1,10 +1,10 @@
-# DIA-Aspire-Rescore
+# DIA-Aspire-rescore
 
-[![Release](https://img.shields.io/github/v/release/https://github.com/5h4ng/DIA-Aspire-Rescore)](https://img.shields.io/github/v/release/https://github.com/5h4ng/DIA-Aspire-Rescore)
-[![Build status](https://img.shields.io/github/actions/workflow/status/https://github.com/5h4ng/DIA-Aspire-Rescore/main.yml?branch=main)](https://github.com/https://github.com/5h4ng/DIA-Aspire-Rescore/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/https://github.com/5h4ng/DIA-Aspire-Rescore/branch/main/graph/badge.svg)](https://codecov.io/gh/https://github.com/5h4ng/DIA-Aspire-Rescore)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/https://github.com/5h4ng/DIA-Aspire-Rescore)](https://img.shields.io/github/commit-activity/m/https://github.com/5h4ng/DIA-Aspire-Rescore)
-[![License](https://img.shields.io/github/license/https://github.com/5h4ng/DIA-Aspire-Rescore)](https://img.shields.io/github/license/https://github.com/5h4ng/DIA-Aspire-Rescore)
+[![Release](https://img.shields.io/github/v/release/5h4ng/DIA-Aspire-rescore?style=for-the-badge)](https://github.com/5h4ng/DIA-Aspire-rescore/releases)
+[![Build status](https://img.shields.io/github/actions/workflow/status/5h4ng/DIA-Aspire-rescore/main.yml?branch=main&style=for-the-badge)](https://github.com/5h4ng/DIA-Aspire-rescore/actions/workflows/main.yml?query=branch%3Amain)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/5h4ng/DIA-Aspire-rescore?style=for-the-badge)](https://github.com/5h4ng/DIA-Aspire-rescore/graphs/commit-activity)
+[![codecov](https://img.shields.io/codecov/c/github/5h4ng/DIA-Aspire-rescore?style=for-the-badge)](https://codecov.io/gh/5h4ng/DIA-Aspire-rescore)
+[![License](https://img.shields.io/github/license/5h4ng/DIA-Aspire-rescore?style=for-the-badge)](https://github.com/5h4ng/DIA-Aspire-rescore/blob/main/LICENSE)
 
 A rescoring module for DIA-Aspire.
 
